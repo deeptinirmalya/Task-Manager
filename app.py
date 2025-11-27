@@ -15,7 +15,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret')
 IST = pytz.timezone('Asia/Kolkata')
 
 #----------------DATABASE CONNECTION-----------------------------
-
+#hii
 def get_db_connection():
     host = os.getenv("DB_HOST")
     user = os.getenv("DB_USER")
