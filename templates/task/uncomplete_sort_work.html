@@ -164,24 +164,22 @@
 </head>
 <body>
     <div class="navbar">
-        <a href="{{ url_for('Uncomplete_tasks') }}">
-            <button type="button">Back</button>
-        </a>
+        <a href="{{ url_for('logout') }}"><button type="button">Logout</button></a>
         <a href="{{ url_for('complete_sort_tasks') }}">
             <button type="button">Completed</button>
         </a>
     </div>
 
     <div class="container">
-        <form method="POST" action="">
+        <form method="POST" action="/tasks/sort-tasks">
             <div class="delete-btn">
                 <button type="submit" onclick="alert('Are you sure want to mark complete!')">Mark Complete</button>
             </div>
             <ul class="statement-list">
                 {% for statement in statements %}
                 <li>
-                    <input type="checkbox" name="delete_checkbox" value="{{ statement.id }}">
-                    <label>{{ statement.name }}</label>
+                    <input type="checkbox" name="delete_checkbox" value="{{ statement.t_id }}">
+                    <label>{{ statement.task }}</label>
                 </li>
                 {% endfor %}
             </ul>

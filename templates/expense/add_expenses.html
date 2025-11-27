@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Transaction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #00ff9f;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .form-container {
+            max-width: 600px;
+            width: 100%;
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid #00ff9f;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 159, 0.3),
+                        inset 0 0 20px rgba(0, 255, 159, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff9f, #00bfff, #ff00ff, #00ff9f);
+            z-index: -1;
+            border-radius: 15px;
+            opacity: 0.3;
+            animation: glow 3s linear infinite;
+            background-size: 400%;
+        }
+
+        @keyframes glow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        h1 {
+            color: #00bfff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 28px;
+            text-shadow: 0 0 20px rgba(0, 191, 255, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #00ff9f;
+            font-size: 14px;
+            letter-spacing: 2px;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            color: #00bfff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 13px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        label::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #00ff9f;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 191, 255, 0.05);
+            border: 1px solid rgba(0, 191, 255, 0.4);
+            border-radius: 8px;
+            color: #00ff9f;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: inset 0 0 10px rgba(0, 191, 255, 0.1);
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #00ff9f;
+            box-shadow: 0 0 20px rgba(0, 255, 159, 0.4),
+                        inset 0 0 15px rgba(0, 255, 159, 0.1);
+            background: rgba(0, 255, 159, 0.08);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%2300ff9f' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 45px;
+        }
+
+        select option {
+            background: #0a0e27;
+            color: #00ff9f;
+            padding: 10px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 30px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            flex: 1;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-label {
+            display: block;
+            padding: 15px;
+            background: rgba(0, 191, 255, 0.05);
+            border: 2px solid rgba(0, 191, 255, 0.3);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        .radio-option input[type="radio"]:checked + .radio-label {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.3), rgba(0, 255, 159, 0.3));
+            border-color: #00ff9f;
+            box-shadow: 0 0 20px rgba(0, 255, 159, 0.4);
+            transform: scale(1.05);
+        }
+
+        .radio-label:hover {
+            border-color: #00bfff;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.3);
+        }
+
+        .radio-label.credit {
+            color: #00ff9f;
+        }
+
+        .radio-label.debit {
+            color: #ff4757;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 35px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            background: linear-gradient(135deg, #00bfff, #00ff9f);
+            color: #0a0e27;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 30px rgba(0, 191, 255, 0.8);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-cancel {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            box-shadow: 0 0 20px rgba(255, 71, 87, 0.5);
+        }
+
+        .btn-cancel:hover {
+            box-shadow: 0 5px 30px rgba(255, 71, 87, 0.8);
+        }
+
+        .account-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .account-option input[type="radio"] {
+            display: none;
+        }
+
+        .account-label {
+            display: block;
+            padding: 15px;
+            background: rgba(0, 191, 255, 0.05);
+            border: 2px solid rgba(0, 191, 255, 0.3);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+            color: #00bfff;
+        }
+
+        .account-option input[type="radio"]:checked + .account-label {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.3), rgba(0, 255, 159, 0.3));
+            border-color: #00ff9f;
+            color: #00ff9f;
+            box-shadow: 0 0 20px rgba(0, 255, 159, 0.4);
+            transform: scale(1.05);
+        }
+
+        .account-label:hover {
+            border-color: #00bfff;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .radio-group {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .account-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h1>New Transaction</h1>
+            <p class="subtitle">Enter transaction details</p>
+        </div>
+
+        <form method="POST" action="/home/add_transaction">
+            <!-- Transaction Type -->
+            <div class="form-group">
+                <label>Transaction Type</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="credit" name="payment_type" value="Credit" required>
+                        <label for="credit" class="radio-label credit">
+                            ↑ Credit<br>
+                            <small style="font-size: 11px; opacity: 0.8;">Money In</small>
+                        </label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="debit" name="payment_type" value="Debit" required>
+                        <label for="debit" class="radio-label debit">
+                            ↓ Debit<br>
+                            <small style="font-size: 11px; opacity: 0.8;">Money Out</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amount -->
+            <div class="form-group">
+                <label for="amount">Amount</label>
+                <input type="number" id="amount" name="amount" step="0.01" min="0" required placeholder="0.00">
+            </div>
+
+            <!-- Payment Mode -->
+            <div class="form-group">
+                <label for="mode">Payment Mode</label>
+                <select id="mode" name="mode" required>
+                    <option value="">Select Payment Mode</option>
+                    <option value="Cash">💵 Cash</option>
+                    <option value="Card">💳 Card</option>
+                    <option value="UPI">📲 UPI</option>
+                    <option value="Bank Transfer">🏦 Bank Transfer</option>
+                </select>
+            </div>
+
+            <!-- Account Selection -->
+            <div class="form-group" id="accountSection">
+                <label>Select Account</label>
+                <div class="account-grid">
+                    <div class="account-option" data-account="cash">
+                        <input type="radio" id="cash" name="account" value="cash">
+                        <label for="cash" class="account-label">💵 Cash</label>
+                    </div>
+                    <div class="account-option" data-account="ippb">
+                        <input type="radio" id="ippb" name="account" value="ippb">
+                        <label for="ippb" class="account-label">🏦 IPPB</label>
+                    </div>
+                    <div class="account-option" data-account="jio">
+                        <input type="radio" id="jio" name="account" value="jio">
+                        <label for="jio" class="account-label">📱 JIO</label>
+                    </div>
+                    <div class="account-option" data-account="sbi">
+                        <input type="radio" id="sbi" name="account" value="sbi">
+                        <label for="sbi" class="account-label">🏛️ SBI</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date & Time -->
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time">Time</label>
+                <input type="time" id="time" name="time" required>
+            </div>
+
+            <!-- Purpose -->
+            <div class="form-group">
+                <label for="purpose">Purpose / Description</label>
+                <textarea id="purpose" name="purpose" required placeholder="Enter transaction purpose..." maxlength="198"></textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn">
+                    ✓ Add Transaction
+                </button>
+                <button type="button" class="btn btn-cancel" onclick="window.location.href='/home/expenses'">
+                    ✕ Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        
+        // Set date
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        document.getElementById('date').value = `${year}-${month}-${day}`;
+        
+        // Set time
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('time').value = `${hours}:${minutes}`;
+
+        // Payment mode logic
+        const modeSelect = document.getElementById('mode');
+        const accountSection = document.getElementById('accountSection');
+        const accountOptions = document.querySelectorAll('.account-option');
+        const accountInputs = document.querySelectorAll('input[name="account"]');
+
+        modeSelect.addEventListener('change', function() {
+            const selectedMode = this.value;
+
+            // Unselect all accounts
+            accountInputs.forEach(input => input.checked = false);
+
+            // ---------- CASH ----------
+            if (selectedMode === 'Cash') {
+                accountSection.style.display = 'none';
+                accountInputs.forEach(input => input.removeAttribute('required'));
+                document.getElementById('cash').checked = true;
+
+                accountOptions.forEach(option => {
+                    option.style.display = 'none';
+                });
+            }
+
+            // ---------- CARD (only SBI visible) ----------
+            else if (selectedMode === 'Card') {
+                accountSection.style.display = 'block';
+                accountInputs.forEach(input => input.setAttribute('required', 'required'));
+
+                accountOptions.forEach(option => {
+                    if (option.dataset.account === 'sbi') {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+            }
+
+            // ---------- UPI OR BANK TRANSFER (Cash hidden) ----------
+            else if (selectedMode === 'UPI' || selectedMode === 'Bank Transfer') {
+                accountSection.style.display = 'block';
+                accountInputs.forEach(input => input.setAttribute('required', 'required'));
+
+                accountOptions.forEach(option => {
+                    // Hide cash
+                    if (option.dataset.account === 'cash') {
+                        option.style.display = 'none';
+                    } 
+                    else {
+                        option.style.display = 'block';
+                    }
+                });
+            }
+
+            // ---------- NO MODE SELECTED ----------
+            else {
+                accountSection.style.display = 'none';
+                accountInputs.forEach(input => input.removeAttribute('required'));
+            }
+        });
+
+        // Hide account section initially
+        accountSection.style.display = 'none';
+    });
+</script>
+</body>
+</html>
