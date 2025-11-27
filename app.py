@@ -330,7 +330,7 @@ def add_transaction():
         try:
             cur.execute("INSERT INTO expenses(is_display,type,date,s_date,time,mode,bank_name,amount,purpose,cash,ippb,jio,sbi)" \
             " VALUES(%s, %s, %s, %s, %s ,%s, %s, %s, %s,%s, %s, %s, %s)",
-            ("False",payment_type,date,s_date,time,mode,account,amount,purpose,new_balance["cash"],new_balance["ippb"],new_balance["jio"],new_balance["sbi"]))
+            ("True",payment_type,date,s_date,time,mode,account,amount,purpose,new_balance["cash"],new_balance["ippb"],new_balance["jio"],new_balance["sbi"]))
             conn.commit()
             cur.close()
             conn.close()
