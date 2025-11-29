@@ -25,35 +25,13 @@
         .form-container {
             max-width: 600px;
             width: 100%;
-            background: rgba(10, 14, 39, 0.8);
+            background: rgba(10, 14, 39, 0.95);
             border: 2px solid #00ff9f;
             border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 0 30px rgba(0, 255, 159, 0.3),
-                        inset 0 0 20px rgba(0, 255, 159, 0.1);
+            box-shadow: 0 0 30px rgba(0, 255, 159, 0.3);
             position: relative;
-            overflow: hidden;
-        }
-
-        .form-container::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #00ff9f, #00bfff, #ff00ff, #00ff9f);
-            z-index: -1;
-            border-radius: 15px;
-            opacity: 0.3;
-            animation: glow 3s linear infinite;
-            background-size: 400%;
-        }
-
-        @keyframes glow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            /* Removed animated ::before for performance */
         }
 
         .form-header {
@@ -98,12 +76,7 @@
             position: absolute;
             left: 0;
             color: #00ff9f;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            /* Removed animation for performance */
         }
 
         input[type="text"],
@@ -120,8 +93,8 @@
             color: #00ff9f;
             font-family: 'Courier New', monospace;
             font-size: 16px;
-            transition: all 0.3s;
-            box-shadow: inset 0 0 10px rgba(0, 191, 255, 0.1);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            /* Optimized transition */
         }
 
         input[type="text"]:focus,
@@ -132,8 +105,7 @@
         textarea:focus {
             outline: none;
             border-color: #00ff9f;
-            box-shadow: 0 0 20px rgba(0, 255, 159, 0.4),
-                        inset 0 0 15px rgba(0, 255, 159, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 159, 0.3);
             background: rgba(0, 255, 159, 0.08);
         }
 
@@ -179,7 +151,7 @@
             border-radius: 8px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-size: 14px;
@@ -189,7 +161,7 @@
             background: linear-gradient(135deg, rgba(0, 191, 255, 0.3), rgba(0, 255, 159, 0.3));
             border-color: #00ff9f;
             box-shadow: 0 0 20px rgba(0, 255, 159, 0.4);
-            transform: scale(1.05);
+            /* Removed transform for performance */
         }
 
         .radio-label:hover {
@@ -223,18 +195,17 @@
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: all 0.3s;
+            transition: all 0.2s;
             box-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
             font-size: 16px;
         }
 
         .btn:hover {
-            transform: translateY(-3px);
             box-shadow: 0 5px 30px rgba(0, 191, 255, 0.8);
         }
 
         .btn:active {
-            transform: translateY(-1px);
+            transform: translateY(1px);
         }
 
         .btn-cancel {
@@ -265,7 +236,7 @@
             border-radius: 8px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-size: 14px;
@@ -277,7 +248,7 @@
             border-color: #00ff9f;
             color: #00ff9f;
             box-shadow: 0 0 20px rgba(0, 255, 159, 0.4);
-            transform: scale(1.05);
+            /* Removed transform for performance */
         }
 
         .account-label:hover {

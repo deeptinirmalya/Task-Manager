@@ -2,70 +2,142 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sort Statements</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f8f9fa;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         /* Navbar */
         .navbar {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 20px;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(138, 43, 226, 0.15));
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .navbar a button {
-            background-color: white;
-            color: #007bff;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
+        .navbar a {
+            text-decoration: none;
         }
 
-        .navbar a button:hover {
-            background-color: #0056b3;
+        .navbar button {
+            background: linear-gradient(135deg, #00ffff 0%, #8a2be2 100%);
             color: white;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .navbar button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+            border-color: #00ffff;
+        }
+
+        .navbar button:active {
+            transform: translateY(0);
         }
 
         /* Container */
         .container {
-            padding: 20px;
-            max-width: 500px;
-            margin: 30px auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 700px;
+            margin: 40px auto;
+            background: rgba(15, 20, 35, 0.9);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(0, 255, 255, 0.1),
+                inset 0 0 60px rgba(0, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+            animation: slideIn 0.6s ease;
         }
 
-        /* Centered delete button */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Delete/Mark Complete button */
         .delete-btn {
             display: flex;
             justify-content: center;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
         }
 
         .delete-btn button {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, #ff006e, #8a2be2);
             color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 5px;
+            border: 2px solid rgba(255, 0, 110, 0.5);
+            padding: 12px 30px;
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.3);
         }
 
         .delete-btn button:hover {
-            background-color: #b02a37;
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(255, 0, 110, 0.6);
+            border-color: #ff006e;
+        }
+
+        .delete-btn button:active {
+            transform: translateY(-1px);
         }
 
         /* Task list */
@@ -78,93 +150,269 @@
         ul.statement-list li {
             display: flex;
             align-items: center;
-            background: #f2f2f2;
-            margin: 6px 0;
-            padding: 10px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        ul.statement-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, #00ffff, #8a2be2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        ul.statement-list li:hover {
+            background: rgba(0, 255, 255, 0.1);
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        ul.statement-list li:hover::before {
+            opacity: 1;
+        }
+
+        /* Custom Checkbox */
+        input[type="checkbox"] {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid rgba(0, 255, 255, 0.5);
             border-radius: 5px;
+            background: rgba(0, 255, 255, 0.05);
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        input[type="checkbox"]:hover {
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        input[type="checkbox"]:checked {
+            background: linear-gradient(135deg, #00ffff, #8a2be2);
+            border-color: #00ffff;
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
         }
 
         label {
-            margin-left: 8px;
+            margin-left: 15px;
             flex-grow: 1;
             word-break: break-word;
+            color: #b8c5d6;
+            font-size: 15px;
+            line-height: 1.5;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        ul.statement-list li:hover label {
+            color: #fff;
         }
 
         /* Floating Add Task button */
         .add-task-btn {
             position: fixed;
-            right: 20px;
-            bottom: 20px;
+            right: 30px;
+            bottom: 30px;
+            z-index: 1000;
+        }
+
+        .add-task-btn a {
+            text-decoration: none;
         }
 
         .add-task-btn button {
-            background-color: #28a745;
-            color: white;
+            background: linear-gradient(135deg, #00ff87, #00ffff);
+            color: #0a0e27;
             border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
+            padding: 16px 32px;
+            border-radius: 50px;
             cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-weight: 700;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 
+                0 4px 20px rgba(0, 255, 135, 0.4),
+                0 0 30px rgba(0, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(0, 255, 255, 0.3);
         }
 
         .add-task-btn button:hover {
-            background-color: #218838;
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 
+                0 8px 30px rgba(0, 255, 135, 0.6),
+                0 0 50px rgba(0, 255, 255, 0.5);
+        }
+
+        .add-task-btn button:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #b8c5d6;
+        }
+
+        .empty-state::before {
+            content: '📋';
+            display: block;
+            font-size: 60px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            font-size: 18px;
         }
 
         /* Responsive Design */
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .navbar {
-                flex-direction: column;
-                align-items: stretch;
+                padding: 12px 20px;
+                gap: 10px;
             }
 
-            .navbar a {
-                width: 100%;
-                margin: 4px 0;
-            }
-
-            .navbar a button {
-                width: 100%;
-                font-size: 16px;
-                padding: 10px;
+            .navbar button {
+                padding: 8px 18px;
+                font-size: 13px;
+                letter-spacing: 1px;
             }
 
             .container {
-                width: 90%;
-                padding: 15px;
+                margin: 30px 20px;
+                padding: 25px 20px;
             }
 
             .delete-btn button {
                 width: 100%;
-                padding: 12px;
-                font-size: 16px;
+                padding: 14px;
+                font-size: 14px;
             }
 
             ul.statement-list li {
-                flex-direction: row;
-                align-items: center;
-                padding: 12px;
-                font-size: 15px;
+                padding: 14px 12px;
+            }
+
+            label {
+                font-size: 14px;
             }
 
             .add-task-btn {
-                right: 10px;
-                bottom: 10px;
+                right: 20px;
+                bottom: 20px;
             }
 
             .add-task-btn button {
-                width: 100px;
-                height: 45px;
+                padding: 14px 24px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 15px;
+            }
+
+            .navbar a {
+                width: 100%;
+            }
+
+            .navbar button {
+                width: 100%;
+                padding: 12px;
                 font-size: 14px;
-                border-radius: 10px;
+            }
+
+            .container {
+                margin: 20px 15px;
+                padding: 20px 15px;
+            }
+
+            .delete-btn button {
+                padding: 13px;
+                font-size: 13px;
+            }
+
+            ul.statement-list li {
+                padding: 12px 10px;
+            }
+
+            input[type="checkbox"] {
+                width: 20px;
+                height: 20px;
+            }
+
+            label {
+                margin-left: 12px;
+                font-size: 13px;
+            }
+
+            .add-task-btn {
+                right: 15px;
+                bottom: 15px;
+            }
+
+            .add-task-btn button {
+                padding: 12px 20px;
+                font-size: 12px;
+                border-radius: 30px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                margin: 15px 10px;
+                padding: 18px 12px;
+            }
+
+            ul.statement-list li {
+                padding: 10px 8px;
+            }
+
+            label {
+                font-size: 12px;
+            }
+
+            .add-task-btn button {
+                padding: 10px 18px;
+                font-size: 11px;
             }
         }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <a href="{{ url_for('logout') }}"><button type="button">Logout</button></a>
+        <a href="{{ url_for('home') }}"><button type="button">Back</button></a>
         <a href="{{ url_for('complete_sort_tasks') }}">
             <button type="button">Completed</button>
         </a>
@@ -173,15 +421,21 @@
     <div class="container">
         <form method="POST" action="/tasks/sort-tasks">
             <div class="delete-btn">
-                <button type="submit" onclick="alert('Are you sure want to mark complete!')">Mark Complete</button>
+                <button type="submit" onclick="return confirm('Are you sure you want to mark as complete?')">Mark Complete</button>
             </div>
             <ul class="statement-list">
-                {% for statement in statements %}
-                <li>
-                    <input type="checkbox" name="delete_checkbox" value="{{ statement.t_id }}">
-                    <label>{{ statement.task }}</label>
-                </li>
-                {% endfor %}
+                {% if statements %}
+                    {% for statement in statements %}
+                    <li>
+                        <input type="checkbox" name="delete_checkbox" value="{{ statement.t_id }}" id="task-{{ statement.t_id }}">
+                        <label for="task-{{ statement.t_id }}">{{ statement.task }}</label>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>No tasks available</p>
+                    </div>
+                {% endif %}
             </ul>
         </form>
     </div>

@@ -5,19 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Task</title>
     <style>
-        /* General page styling */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
+        * {
             margin: 0;
             padding: 0;
-            text-align: center;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         /* Navbar styling */
         .navbar {
-            background-color: #007bff;
-            color: white;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(138, 43, 226, 0.15));
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(0, 255, 255, 0.3);
             padding: 15px 20px;
             display: flex;
             justify-content: center;
@@ -25,97 +47,279 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .navbar a button {
-            background-color: white;
-            color: #007bff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
+        .navbar a {
+            text-decoration: none;
         }
 
-        .navbar a button:hover {
-            background-color: #0056b3;
+        .navbar button {
+            background: linear-gradient(135deg, #00ffff 0%, #8a2be2 100%);
             color: white;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            padding: 10px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .navbar button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+            border-color: #00ffff;
+        }
+
+        .navbar button:active {
+            transform: translateY(0);
         }
 
         /* Main container */
         .container {
-            background: white;
-            max-width: 400px;
-            margin: 60px auto;
-            padding: 25px 20px;
-            border-radius: 10px;
-            box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
+            background: rgba(15, 20, 35, 0.9);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            margin: auto;
+            padding: 50px 40px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(0, 255, 255, 0.1),
+                inset 0 0 60px rgba(0, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+            animation: slideIn 0.6s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ffff, #8a2be2, #00ffff);
+            border-radius: 20px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .container:hover::before {
+            opacity: 0.3;
         }
 
         h2 {
-            margin-bottom: 20px;
-            color: #333;
+            color: #00ffff;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 32px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
         }
 
-        /* Input and button styling */
+        /* Form styling */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
         input[type="text"] {
-            width: 90%;
-            padding: 10px;
+            width: 100%;
+            padding: 18px 20px;
             font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            color: #fff;
             outline: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(184, 197, 214, 0.5);
         }
 
         input[type="text"]:focus {
-            border-color: #007bff;
+            border-color: #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        /* Character counter */
+        .char-counter {
+            position: absolute;
+            bottom: -22px;
+            right: 5px;
+            font-size: 12px;
+            color: rgba(184, 197, 214, 0.6);
         }
 
         button[type="submit"] {
-            background-color: #28a745;
-            color: white;
+            background: linear-gradient(135deg, #00ff87, #00ffff);
+            color: #0a0e27;
             border: none;
-            padding: 10px 25px;
-            border-radius: 6px;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             cursor: pointer;
-            font-size: 16px;
-            margin-top: 15px;
-            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 5px 20px rgba(0, 255, 135, 0.4),
+                0 0 30px rgba(0, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        button[type="submit"]::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button[type="submit"]:hover::before {
+            width: 400px;
+            height: 400px;
         }
 
         button[type="submit"]:hover {
-            background-color: #218838;
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 30px rgba(0, 255, 135, 0.6),
+                0 0 50px rgba(0, 255, 255, 0.5);
         }
 
-        /* Responsive design for mobile */
-        @media (max-width: 600px) {
-            .navbar a button {
-                width: 80%;
+        button[type="submit"]:active {
+            transform: translateY(-1px);
+        }
+
+        /* Task icon */
+        .task-icon {
+            text-align: center;
+            font-size: 50px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 30px;
+                width: 85%;
+            }
+
+            h2 {
+                font-size: 26px;
+                margin-bottom: 30px;
+            }
+
+            input[type="text"] {
+                padding: 16px 18px;
                 font-size: 15px;
-                padding: 10px;
+            }
+
+            button[type="submit"] {
+                padding: 16px 35px;
+                font-size: 16px;
+            }
+
+            .task-icon {
+                font-size: 45px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navbar button {
+                padding: 10px 25px;
+                font-size: 13px;
             }
 
             .container {
                 width: 90%;
-                margin: 40px auto;
-                padding: 20px 15px;
+                padding: 35px 25px;
+                margin: 20px auto;
+            }
+
+            h2 {
+                font-size: 22px;
+                letter-spacing: 2px;
             }
 
             input[type="text"] {
-                width: 100%;
-                font-size: 15px;
-                padding: 12px;
+                padding: 15px 16px;
+                font-size: 14px;
             }
 
             button[type="submit"] {
                 width: 100%;
-                padding: 12px;
+                padding: 15px 30px;
                 font-size: 15px;
+            }
+
+            .task-icon {
+                font-size: 40px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                width: 95%;
+                padding: 30px 20px;
             }
 
             h2 {
                 font-size: 20px;
+            }
+
+            input[type="text"] {
+                padding: 14px;
+                font-size: 13px;
+            }
+
+            button[type="submit"] {
+                padding: 14px 25px;
+                font-size: 14px;
+            }
+
+            .char-counter {
+                font-size: 11px;
             }
         }
     </style>
@@ -123,19 +327,38 @@
 <body>
     <!-- Navbar with centered Back button -->
     <div class="navbar">
-        <a href="{{ url_for('sort_tasks') }}">
+        <a href="javascript:history.back()">
             <button type="button">Back</button>
         </a>
     </div>
 
     <!-- Main content -->
     <div class="container">
+        <div class="task-icon">📝</div>
         <h2>Add a Task</h2>
         <form action="{{ url_for('add_sort_tasks') }}" method="POST">
-            <input type="text" name="task_name" placeholder="Enter task name" required maxlength="148">
-            <br><br>
-            <button type="submit">Add</button>
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    name="task_name" 
+                    placeholder="Enter task name" 
+                    required 
+                    maxlength="148"
+                    id="taskInput"
+                    oninput="updateCharCounter()"
+                >
+                <span class="char-counter" id="charCounter">0/148</span>
+            </div>
+            <button type="submit">Add Task</button>
         </form>
     </div>
+
+    <script>
+        function updateCharCounter() {
+            const input = document.getElementById('taskInput');
+            const counter = document.getElementById('charCounter');
+            counter.textContent = `${input.value.length}/148`;
+        }
+    </script>
 </body>
 </html>

@@ -1,10 +1,12 @@
 import os
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, send_file, flash
 from datetime import datetime
 from dotenv import load_dotenv
 import mysql.connector
 import pytz
 import requests
+import io
+import random
 
 load_dotenv()
 
@@ -14,8 +16,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret')
 # Define India timezone
 IST = pytz.timezone('Asia/Kolkata')
 
-#----------------DATABASE CONNECTION-----------------------------
-#hii
+#----------------DATABASE CONNECTION 1 -----------------------------
 def get_db_connection():
     host = os.getenv("DB_HOST")
     user = os.getenv("DB_USER")
@@ -25,7 +26,7 @@ def get_db_connection():
     ssl_ca = os.getenv("SSL_CA")
 
     if not all([host, user, password, database, port, ssl_ca]):
-        raise ValueError("❌ Missing one or more DB environment variables!")
+        raise ValueError("❌ Missing one or more DB environment variables! for db 1 connection")
 
     return mysql.connector.connect(
         host=host,
@@ -36,10 +37,31 @@ def get_db_connection():
         ssl_ca=ssl_ca
     )
 
+#----------------DATABASE CONNECTION 2 -----------------------------
+def get_db_connection2():
+    host = os.getenv("DB_HOST2")
+    user = os.getenv("DB_USER2")
+    password = os.getenv("DB_PASSWORD2")
+    database = os.getenv("DB_NAME2")
+    port = os.getenv("DB_PORT2")
+    ssl_ca = os.getenv("SSL_CA2")
+
+    if not all([host, user, password, database, port, ssl_ca]):
+        raise ValueError("❌ Missing one or more DB environment variables! for db 2 connection")
+
+    return mysql.connector.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=database,
+        port=int(port),
+        ssl_ca=ssl_ca,
+        use_pure=True          # <-- REQUIRED for correct BLOB handling
+    )
+
 #-----------------current date (India timezone)----------------------
 
 def get_current_ist_time():
-    """Returns current time in IST timezone"""
     return datetime.now(IST)
 
 def format_ist_time(dt):
@@ -110,6 +132,11 @@ def login():
         if user_id == os.getenv("USER_ID") and password == os.getenv("USER_PASSWORD"):
             session['user_id'] = user_id
             return redirect(url_for('home'))
+        else:
+            msgs=["invalid credential", "invalid values", "credential not match", "wrong input",
+                    "wrong credential", "not allow", "not a valid input"]
+            msg = msgs[random.randint(0, 6)]
+            flash(msg, "error")
     return render_template('login.html')
 
 #------------home page-------------------------------
@@ -127,10 +154,14 @@ def unautorized():
 
 @app.route('/server-error', methods=['GET', 'POST'])
 def server_error():
+    if "user_id" not in session:
+        return redirect('/unautorized')
     return render_template("error_page/ep500.html")
 
 @app.route('/card-not-allow', methods=['GET', 'POST'])
 def card_not_allow():
+    if "user_id" not in session:
+        return redirect('/unautorized')
     return render_template("error_page/credit_t_card.html")
 
 @app.route('/error', methods=['GET', 'POST'])
@@ -158,14 +189,14 @@ def sort_tasks():
                 cur.close()
                 conn.close()
                 return redirect("/tasks/sort-tasks")
-    except mysql.connector.Error:
+    except Exception:
         return redirect(url_for('server_error'))
     try:
         cur.execute("SELECT t_id,task FROM task WHERE is_complete=%s",("False",))
         statements = cur.fetchall()
         cur.close()
         conn.close()
-    except mysql.connector.Error:
+    except Exception:
         return redirect(url_for('server_error'))
     return render_template('task/uncomplete_sort_work.html', statements=statements)
 
@@ -184,8 +215,8 @@ def add_sort_tasks():
             conn.commit()
             cur.close()
             conn.close()
-        except mysql.connector.Error:
-            return redirect(url_for('server_error'))
+        except Exception:
+            return redirect('/server-error')
         return redirect(url_for('add_sort_tasks'))
     return render_template('task/add_sort_work.html')
 
@@ -200,12 +231,12 @@ def complete_sort_tasks():
         statements = cur.fetchall()
         cur.close()
         conn.close()
-    except mysql.connector.Error:
-        return redirect(url_for('server_error'))
+    except Exception:
+        return redirect('/server-error')
     return render_template("task/completed_sort_work.html", statements = statements)
 
 
-@app.route("/tasks/completed-sort-tasks/clear-all-sort-tasks")
+@app.route("/tasks/clear-all-sort-tasks")
 def clear_complete_sort_tasks():
     if "user_id" not in session:
         return redirect("/unautorized")
@@ -216,9 +247,9 @@ def clear_complete_sort_tasks():
         conn.commit()
         cur.close()
         conn.close()
-    except mysql.connector.Error:
-        return redirect(url_for('server_error'))
-    return redirect("/tasks/completed-sort-tasks/clear-all-sort-tasks")
+    except Exception:
+        return redirect('/server-error')
+    return redirect(url_for('clear_complete_sort_tasks'))
 
 
 #--------------------- EXPENSEC ROUTS -----------------------
@@ -232,7 +263,7 @@ def expenses():
         conn = get_db_connection()
         cur = conn.cursor(dictionary=True)
 
-        cur.execute("SELECT t_id, type, s_date, time, mode, amount,bank_name, purpose FROM expenses WHERE is_display=%s",("True",))
+        cur.execute("SELECT t_id, type, s_date, time, mode, amount,bank_name, purpose FROM expenses WHERE is_display=%s ORDER BY t_id DESC",("True",))
         transactions = cur.fetchall()
 
         cur.execute("SELECT SUM(amount) AS total_in_amount FROM expenses WHERE is_display = %s AND type = %s",("True", "Credit"))
@@ -248,8 +279,8 @@ def expenses():
 
         cur.close()
         conn.close()
-    except mysql.connector.Error:
-        return redirect(url_for('server_error'))
+    except Exception:
+        return redirect('/server-error')
 
 
     if not result_balance:
@@ -287,17 +318,13 @@ def add_transaction():
         try:
             conn = get_db_connection()
             cur = conn.cursor(dictionary=True)
-        except mysql.connector.Error:
-            return redirect(url_for('server_error'))
-        
-        try:
+
             cur.execute("SELECT cash, ippb, jio, sbi FROM expenses WHERE t_id = (SELECT MAX(t_id) FROM expenses)")
             previous_value = cur.fetchone()
-        except mysql.connector.Error:
-            return redirect(url_for('server_error'))
-
-        if not previous_value:
-            previous_value={"cash": 3200, "ippb": 110, "jio": 0.75, "sbi": 11950}
+        except Exception:
+            return redirect('/server-error')
+        # if not previous_value:
+        #     previous_value={"cash": 3200, "ippb": 110, "jio": 0.75, "sbi": 11950}
 
         new_balance={
             "cash":previous_value["cash"],
@@ -323,7 +350,7 @@ def add_transaction():
                 if mode == "UPI" or mode == "Bank Transfer":
                     new_balance[account] -= amount
             else:
-                return redirect(url_for('other_error'))
+                return redirect('/error')
         except TypeError:
             return redirect(url_for('other_error'))
         
@@ -334,11 +361,125 @@ def add_transaction():
             conn.commit()
             cur.close()
             conn.close()
-        except mysql.connector.Error:
-            return redirect(url_for('server_error'))
+        except Exception:
+            return redirect('/server-error')
         
         return redirect(url_for('add_transaction'))
+
     return render_template("expense/add_expenses.html")
+
+#----------------------------------- FILE MECANISIM -------------------------------
+@app.route('/upload_files', methods=['GET', 'POST'])
+def upload_file():
+    if "user_id" not in session:
+        return redirect("/unautorized")
+    
+    if request.method == 'POST':
+        file = request.files.get('file')
+
+        if not file or file.filename.strip() == '':
+            return "No file selected"
+
+        file_name = file.filename
+        file_ext = file_name.split('.')[-1]
+        file_data = file.read()                  # bytes (correct)
+        file_size = len(file_data)
+        uploaded_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # clean VARCHAR
+
+        try:
+            db = get_db_connection2()
+            cursor = db.cursor(buffered=True)    # IMPORTANT for BLOB handling
+
+            cursor.execute("""
+                INSERT INTO stored_files (file_name, file_ext, file_size, uploaded_at, file_data)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (file_name, file_ext, file_size, uploaded_at, file_data))
+            db.commit()
+            cursor.close()
+            db.close()
+            return redirect(url_for('upload_file'))
+
+        except Exception as e:
+            print("UPLOAD ERROR:", e)
+            return redirect('/server-error')
+
+    return render_template("file/upload_file.html")
+
+
+
+# LIST ALL FILES
+
+@app.route('/view_files')
+def list_files():
+    if "user_id" not in session:
+        return redirect("/unautorized")
+    try:
+        db = get_db_connection2()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute("SELECT id, file_name, file_size, uploaded_at FROM stored_files ORDER BY id DESC")
+        files = cursor.fetchall()
+        db.close()
+        cursor.close()
+    except Exception:
+        return redirect('/server-error')
+    return render_template("file/view_files.html", files=files)
+
+
+#DOWNLOAD FILE
+
+@app.route('/download/<int:file_id>')
+def download_file(file_id):
+    if "user_id" not in session:
+        return redirect("/unautorized")
+
+    try:
+        db = get_db_connection2()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute("SELECT file_name, file_data FROM stored_files WHERE id = %s",(file_id,))
+        result = cursor.fetchone()
+        db.close()
+        cursor.close()
+    except Exception as e:
+        print("Download error:", str(e))
+        return redirect('/server-error')
+
+    if not result:
+        return "File not found"
+
+    file_name = result["file_name"]
+    file_data = result["file_data"]
+
+    return send_file(
+        io.BytesIO(file_data),
+        download_name=file_name,
+        as_attachment=True
+    )
+
+@app.route('/truncket', methods=['POST'])
+def truncket():
+    if "user_id" not in session:
+        return redirect('/unautorized')
+    
+    password = request.form.get('password')
+    
+    if password == os.getenv('USER_PASSWORD'):
+        try:
+            db = get_db_connection2()
+            cursor = db.cursor(dictionary=True)
+            cursor.execute("TRUNCATE TABLE stored_files")
+            db.commit()
+            db.close()
+            cursor.close()
+            flash("All files deleted successfully!", "success")
+            return redirect(url_for('list_files'))
+        except Exception as e:
+            print("Error:", e)  # useful for debugging
+            return redirect('/server-error')
+    else:
+        flash("Wrong password", "error")
+        return redirect(url_for('list_files'))
 
 
 
