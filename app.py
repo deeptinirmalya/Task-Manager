@@ -133,8 +133,8 @@ def login():
             session['user_id'] = user_id
             return redirect(url_for('home'))
         else:
-            msgs=["invalid credential", "invalid values", "credential not match", "wrong input",
-                    "wrong credential", "not allow", "not a valid input"]
+            msgs=["Invalid Credential", "invalid values", "Credential not match", "wrong input",
+                    "wrong Credential", "not allow", "not a valid input"]
             msg = msgs[random.randint(0, 6)]
             flash(msg, "error")
     return render_template('login.html')
@@ -249,7 +249,7 @@ def clear_complete_sort_tasks():
         conn.close()
     except Exception:
         return redirect('/server-error')
-    return redirect(url_for('clear_complete_sort_tasks'))
+    return redirect(url_for('complete_sort_tasks'))
 
 
 #--------------------- EXPENSEC ROUTS -----------------------

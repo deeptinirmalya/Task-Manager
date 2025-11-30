@@ -17,6 +17,9 @@
             color: #00ff9f;
             min-height: 100vh;
             padding: 20px;
+            /* Hardware acceleration */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
@@ -26,12 +29,13 @@
             border: 2px solid #00ff9f;
             border-radius: 15px;
             padding: 25px;
-            box-shadow: 0 0 30px rgba(0, 255, 159, 0.3),
-                        inset 0 0 20px rgba(0, 255, 159, 0.1);
+            box-shadow: 0 0 30px rgba(0, 255, 159, 0.3);
             position: relative;
-            overflow: hidden;
+            /* Remove expensive effects */
+            will-change: auto;
         }
 
+        /* Simplified border - removed animated gradient */
         .container::before {
             content: '';
             position: absolute;
@@ -39,18 +43,11 @@
             left: -2px;
             right: -2px;
             bottom: -2px;
-            background: linear-gradient(45deg, #00ff9f, #00bfff, #ff00ff, #00ff9f);
+            background: linear-gradient(45deg, #00ff9f, #00bfff);
             z-index: -1;
             border-radius: 15px;
-            opacity: 0.3;
-            animation: glow 3s linear infinite;
-            background-size: 400%;
-        }
-
-        @keyframes glow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            opacity: 0.2;
+            /* Animation removed for performance */
         }
 
         .header-grid {
@@ -67,7 +64,12 @@
             padding: 15px;
             text-align: center;
             box-shadow: 0 0 15px rgba(0, 191, 255, 0.3);
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: transform 0.2s ease-out;
+            /* GPU acceleration only when needed */
+        }
+
+        .account-box:hover {
+            transform: translateY(-2px);
         }
 
         .account-name {
@@ -82,7 +84,7 @@
             font-size: 24px;
             color: #00ff9f;
             font-weight: bold;
-            text-shadow: 0 0 10px rgba(0, 255, 159, 0.8);
+            text-shadow: 0 0 10px rgba(0, 255, 159, 0.5);
         }
 
         .summary-grid {
@@ -112,7 +114,7 @@
             font-size: 28px;
             color: #00ff9f;
             font-weight: bold;
-            text-shadow: 0 0 15px rgba(0, 255, 159, 0.8);
+            text-shadow: 0 0 15px rgba(0, 255, 159, 0.5);
         }
 
         .transactions-table {
@@ -120,6 +122,8 @@
             border-collapse: separate;
             border-spacing: 0 10px;
             margin-bottom: 25px;
+            /* Optimize table rendering */
+            table-layout: fixed;
         }
 
         .transactions-table thead tr {
@@ -140,16 +144,25 @@
             padding: 15px;
             border: 1px solid rgba(0, 191, 255, 0.3);
             color: #00bfff;
+            word-wrap: break-word;
+        }
+
+        .transactions-table tbody tr {
+            transition: background-color 0.2s ease-out;
+        }
+
+        .transactions-table tbody tr:hover {
+            background: rgba(0, 191, 255, 0.1);
         }
 
         .debit {
             color: #ff4757;
-            text-shadow: 0 0 10px rgba(255, 71, 87, 0.6);
+            text-shadow: 0 0 8px rgba(255, 71, 87, 0.4);
         }
 
         .credit {
             color: #00ff9f;
-            text-shadow: 0 0 10px rgba(0, 255, 159, 0.6);
+            text-shadow: 0 0 8px rgba(0, 255, 159, 0.4);
         }
 
         .btn {
@@ -163,16 +176,22 @@
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: all 0.3s;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
             box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
             text-align: center;
             text-decoration: none;
             display: inline-block;
+            /* Optimize button performance */
+            will-change: transform;
         }
 
         .btn:hover {
             transform: scale(1.05);
             box-shadow: 0 0 25px rgba(0, 191, 255, 0.8);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
         }
 
         .action-buttons {
@@ -185,7 +204,33 @@
             margin-bottom: 20px;
         }
 
-        /* FIXED RESPONSIVE CODE */
+        .details-btn {
+            background: linear-gradient(135deg, #00bfff, #00ff9f);
+            color: #0a0e27;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+            will-change: transform;
+        }
+
+        .details-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.8);
+        }
+
+        .details-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* RESPONSIVE */
         @media (max-width: 768px) {
             .action-buttons {
                 flex-direction: column;
@@ -197,17 +242,29 @@
             }
         }
 
-        /* Must be separate — NOT nested */
         @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .transactions-table {
+                border-spacing: 0 5px;
+            }
+
             .transactions-table thead {
                 display: none;
             }
 
             .transactions-table tbody tr {
                 display: block;
-                margin-bottom: 20px;
+                margin-bottom: 15px;
                 border: 1px solid #00bfff;
                 border-radius: 10px;
+                background: rgba(10, 14, 39, 0.5);
             }
 
             .transactions-table td {
@@ -215,6 +272,9 @@
                 padding: 10px;
                 text-align: right;
                 border-bottom: 1px solid rgba(0, 191, 255, 0.2);
+                border-left: none;
+                border-right: none;
+                border-top: none;
             }
 
             .transactions-table td::before {
@@ -228,27 +288,20 @@
                 border-bottom: none;
             }
         }
-        .details-btn {
-            background: linear-gradient(135deg, #00bfff, #00ff9f);
-            color: #0a0e27;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+
+        /* Optimize scrolling performance */
+        * {
+            -webkit-overflow-scrolling: touch;
         }
 
-        .details-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(0, 191, 255, 0.8);
+        /* Reduce motion for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
-
     </style>
 </head>
 
@@ -319,7 +372,7 @@
                     <td data-label="Purpose">{{ transaction.purpose }}</td>
 
                     <td data-label="Action">
-                        <button class="details-btn">Details</button>
+                        <button class="details-btn" onclick="showDetails(this)">Details</button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -336,6 +389,15 @@
         function showMore() {
             alert("Add your pagination here");
         }
+
+        function showDetails(button) {
+            // Add your details functionality here
+            alert("Transaction details");
+        }
+
+        // Passive event listeners for better scroll performance
+        document.addEventListener('touchstart', function() {}, { passive: true });
+        document.addEventListener('touchmove', function() {}, { passive: true });
     </script>
 
 </body>
