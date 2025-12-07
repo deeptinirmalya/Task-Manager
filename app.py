@@ -78,13 +78,11 @@ current_date = format_ist_time(now_date)
 
 #----------------EMAIL-----------------------------
 def send_mail(subject, body):
-        # Environment variables
         try:
             api_key = os.getenv("BREVO_API_KEY")
             sender = os.getenv("EMAIL_USER")
             receiver = os.getenv("EMAIL")
 
-            # Safety check
             if not all([api_key, sender, receiver]):
                 missing = [k for k, v in {
                     "BREVO_API_KEY": api_key,
@@ -118,6 +116,8 @@ def send_mail(subject, body):
                 return f"❌ Failed to send: {response.status_code} - {response.text}", 500
         except Exception as e:
             return f"Unexpected error: {e}", 500
+        
+
 
 #--------------------------- SEND UNCOMPLETE TASK -------------------------------
 def remind_tasks():
@@ -520,8 +520,11 @@ def ippb_login_reminder():
 
 
 # ---------------- SECHDULER  ----------------
+
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(remind_tasks, 'interval', hours=2)
+scheduler.add_job(remind_tasks, 'interval', seconds=10)
 scheduler.add_job(ippb_login_reminder, 'cron', day='*/3', hour=22, minute=0)
 
 
@@ -885,18 +888,6 @@ def truncket():
         flash("Wrong password", "error")
         return redirect(url_for('list_files'))
 
-
-
-
-@app.route("/send-mail", methods=['GET', 'POST'])
-
-
-
-
-
-
-
-#------------------------- LOG OUT -----------------------
 
 @app.route("/logout")
 def logout():
