@@ -1,6 +1,8 @@
 import os
 from flask import Flask, render_template, request, redirect, session, url_for, send_file, flash
+from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
+import time
 from dotenv import load_dotenv
 import mysql.connector
 import pytz
@@ -117,9 +119,411 @@ def send_mail(subject, body):
         except Exception as e:
             return f"Unexpected error: {e}", 500
 
+#--------------------------- SEND UNCOMPLETE TASK -------------------------------
+def remind_tasks():
+    try:
+        # Connect to DB and get all incomplete tasks
+        conn = get_db_connection()
+        cur = conn.cursor(dictionary=True)
+        cur.execute("SELECT task FROM task WHERE is_complete = %s", ("False",))
+        tasks = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        if not tasks:
+            body = create_email_template([])
+            subject = "✓ All Tasks Complete!"
+        else:
+            task_list = [task['task'] for task in tasks]
+            body = create_email_template(task_list)
+            subject = f"📌 {len(task_list)} Task{'s' if len(task_list) > 1 else ''} Pending"
+            
+    except mysql.connector.Error as err:
+        return f"Database error: {err}", 500
+    
+    print("Sending email...")
+    result = send_mail(subject, body)
+    return result
 
 
-# ---------------- REMINDER JOB ----------------
+def create_email_template(tasks):
+    """Create a clean, mobile-friendly HTML email template"""
+    # Generate task items HTML
+    if not tasks:
+        content_html = '''
+        <tr>
+            <td style="padding: 40px 20px; text-align: center;">
+                <div style="font-size: 80px; margin-bottom: 20px;">🎉</div>
+                <h2 style="color: #10b981; font-size: 26px; margin: 0 0 10px 0; font-weight: 700;">All Done!</h2>
+                <p style="color: #6b7280; font-size: 16px; margin: 0; line-height: 1.5;">You've completed all your tasks. Great job!</p>
+            </td>
+        </tr>
+        '''
+    else:
+        task_items = ""
+        for idx, task in enumerate(tasks, 1):
+            task_items += f'''
+            <tr>
+                <td style="padding: 8px 0;">
+                    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; border: 2px solid #e5e7eb;">
+                        <tr>
+                            <td style="padding: 20px;">
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td width="45" valign="top">
+                                            <div style="background-color: #3b82f6; color: #ffffff; width: 36px; height: 36px; border-radius: 8px; text-align: center; line-height: 36px; font-weight: 700; font-size: 18px;">{idx}</div>
+                                        </td>
+                                        <td valign="top" style="padding-left: 15px;">
+                                            <p style="margin: 0; color: #111827; font-size: 16px; line-height: 1.6; font-weight: 500;">{task}</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            '''
+        
+        content_html = f'''
+        <tr>
+            <td style="padding: 10px 0 20px 0;">
+                <h2 style="color: #111827; font-size: 22px; margin: 0; font-weight: 700; padding-bottom: 5px;">Your Tasks</h2>
+                <p style="color: #6b7280; font-size: 14px; margin: 0;">{len(tasks)} task{'s' if len(tasks) > 1 else ''} waiting for you</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    {task_items}
+                </table>
+            </td>
+        </tr>
+        '''
+    
+    # Complete HTML template - Ultra clean and mobile-optimized
+    html_template = f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Task Update</title>
+        <style type="text/css">
+            body {{
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-text-size-adjust: 100% !important;
+                -ms-text-size-adjust: 100% !important;
+                -webkit-font-smoothing: antialiased !important;
+            }}
+            table {{
+                border-collapse: collapse !important;
+                mso-table-lspace: 0pt !important;
+                mso-table-rspace: 0pt !important;
+            }}
+            img {{
+                border: 0 !important;
+                outline: none !important;
+            }}
+            p, h1, h2 {{
+                padding: 0 !important;
+                margin: 0 !important;
+            }}
+            @media only screen and (max-width: 600px) {{
+                .container {{
+                    width: 100% !important;
+                }}
+                .mobile-padding {{
+                    padding: 20px !important;
+                }}
+            }}
+        </style>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f3f4f6;">
+            <tr>
+                <td align="center" style="padding: 20px 10px;">
+                    <table class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);">
+                        
+                        <!-- Header Section -->
+                        <tr>
+                            <td align="center" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 20px;">
+                                <table cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td align="center">
+                                            <div style="background-color: rgba(255, 255, 255, 0.2); width: 70px; height: 70px; border-radius: 50%; display: inline-block; text-align: center; line-height: 70px; margin-bottom: 15px;">
+                                                <span style="font-size: 36px;">✓</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center">
+                                            <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0;">Task Manager</h1>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center" style="padding-top: 8px;">
+                                            <p style="color: #dbeafe; font-size: 15px; margin: 0;">Your Daily Summary</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Main Content -->
+                        <tr>
+                            <td class="mobile-padding" style="padding: 35px 30px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td>
+                                            <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 5px 0;">Hello! 👋</p>
+                                            <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 30px 0;">Here's your task update for today.</p>
+                                        </td>
+                                    </tr>
+                                    
+                                    {content_html}
+                                    
+                                    <tr>
+                                        <td align="center" style="padding-top: 35px;">
+                                            <table cellpadding="0" cellspacing="0" border="0">
+                                                <tr>
+                                                    <td align="center" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 10px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);">
+                                                        <a href="https://deepti.onrender.com/" style="display: block; color: #ffffff; text-decoration: none; padding: 15px 45px; font-weight: 600; font-size: 16px;">Open Dashboard</a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td align="center" style="background-color: #f9fafb; padding: 30px 20px; border-top: 1px solid #e5e7eb;">
+                                <table cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td align="center">
+                                            <p style="color: #6b7280; font-size: 14px; margin: 0 0 12px 0; line-height: 1.5;">Stay productive and achieve your goals! 🚀</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center">
+                                            <p style="color: #9ca3af; font-size: 12px; margin: 0; line-height: 1.6;">
+                                                © 2024 Task Manager. All rights reserved.<br>
+                                                This is an automated email.
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center" style="padding-top: 15px;">
+                                            <a href="#" style="color: #9ca3af; text-decoration: none; font-size: 12px; padding: 0 8px;">Help</a>
+                                            <span style="color: #d1d5db;">•</span>
+                                            <a href="#" style="color: #9ca3af; text-decoration: none; font-size: 12px; padding: 0 8px;">Settings</a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    '''
+    return html_template
+
+
+#---------------------------------------- SEND REMINDER FOR IPPB LOGIN ----------------------------------------
+
+def ippb_login_reminder():
+    subject = "⚠️ Urgent: Login Required - Account Deactivation Warning"
+    
+    # HTML Email Body
+    body = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Account Reminder</title>
+        <style type="text/css">
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-text-size-adjust: 100% !important;
+                -ms-text-size-adjust: 100% !important;
+                -webkit-font-smoothing: antialiased !important;
+            }
+            table {
+                border-collapse: collapse !important;
+                mso-table-lspace: 0pt !important;
+                mso-table-rspace: 0pt !important;
+            }
+            @media only screen and (max-width: 600px) {
+                .container {
+                    width: 100% !important;
+                }
+                .mobile-padding {
+                    padding: 20px !important;
+                }
+            }
+        </style>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f3f4f6;">
+            <tr>
+                <td align="center" style="padding: 20px 10px;">
+                    <table class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);">
+                        
+                        <!-- Header Section -->
+                        <tr>
+                            <td align="center" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 20px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td align="center" style="padding-bottom: 15px;">
+                                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                                                <tr>
+                                                    <td align="center" style="background-color: rgba(255, 255, 255, 0.2); width: 70px; height: 70px; border-radius: 50%; text-align: center; vertical-align: middle;">
+                                                        <span style="font-size: 36px; line-height: 70px; display: inline-block;">⚠️</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center">
+                                            <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0;">Urgent Reminder</h1>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center" style="padding-top: 8px;">
+                                            <p style="color: #fecaca; font-size: 15px; margin: 0;">Action Required</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Main Content -->
+                        <tr>
+                            <td class="mobile-padding" style="padding: 35px 30px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td>
+                                            <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 5px 0;">Hello! 👋</p>
+                                            <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 30px 0;">This is an important reminder about your account.</p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Warning Box -->
+                                    <tr>
+                                        <td style="padding: 0 0 30px 0;">
+                                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 8px;">
+                                                <tr>
+                                                    <td style="padding: 25px;">
+                                                        <table width="100%" cellpadding="0" cellspacing="0">
+                                                            <tr>
+                                                                <td>
+                                                                    <h2 style="color: #dc2626; font-size: 20px; margin: 0 0 12px 0; font-weight: 700;">⚠️ Action Required</h2>
+                                                                    <p style="color: #991b1b; font-size: 16px; line-height: 1.6; margin: 0;">
+                                                                        Please log in to your <strong>IPPP Account App</strong> as soon as possible. Failure to log in may result in your account being deactivated.
+                                                                    </p>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Info Box -->
+                                    <tr>
+                                        <td style="padding: 0 0 30px 0;">
+                                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f0f9ff; border-radius: 8px;">
+                                                <tr>
+                                                    <td style="padding: 20px;">
+                                                        <h3 style="color: #0369a1; font-size: 16px; margin: 0 0 10px 0; font-weight: 600;">Why is this important?</h3>
+                                                        <p style="color: #075985; font-size: 14px; line-height: 1.6; margin: 0;">
+                                                            Regular login helps us ensure your account remains active and secure. To prevent any interruption to your service, please log in within the next 24 hours.
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Additional Info -->
+                                    <tr>
+                                        <td style="padding-top: 30px;">
+                                            <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0; text-align: center;">
+                                                If you have any questions or concerns, please contact our support team.
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td align="center" style="background-color: #f9fafb; padding: 30px 20px; border-top: 1px solid #e5e7eb;">
+                                <table cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td align="center">
+                                            <p style="color: #6b7280; font-size: 14px; margin: 0 0 12px 0; line-height: 1.5;">
+                                                This is an automated reminder from IPPP App
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center">
+                                            <p style="color: #9ca3af; font-size: 12px; margin: 0; line-height: 1.6;">
+                                                © 2024 IPPP App. All rights reserved.<br>
+                                                Please do not reply to this email.
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center" style="padding-top: 15px;">
+                                            <a href="#" style="color: #9ca3af; text-decoration: none; font-size: 12px; padding: 0 8px;">Help Center</a>
+                                            <span style="color: #d1d5db;">•</span>
+                                            <a href="#" style="color: #9ca3af; text-decoration: none; font-size: 12px; padding: 0 8px;">Contact Support</a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    '''
+    
+    try:
+        print("Sending email...")
+        result = send_mail(subject, body)
+        return result
+    except Exception as e:
+        return f"Error sending email: {str(e)}", 500
+
+
+
+
+# ---------------- SECHDULER  ----------------
+scheduler = BackgroundScheduler()
+scheduler.add_job(remind_tasks, 'interval', hours=2)
+scheduler.add_job(ippb_login_reminder, 'cron', day='*/3', hour=22, minute=0)
+
 
 
 #----------------ROUTS START----------------------------
@@ -382,13 +786,13 @@ def upload_file():
 
         file_name = file.filename
         file_ext = file_name.split('.')[-1]
-        file_data = file.read()                  # bytes (correct)
+        file_data = file.read()
         file_size = len(file_data)
-        uploaded_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # clean VARCHAR
+        uploaded_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         try:
             db = get_db_connection2()
-            cursor = db.cursor(buffered=True)    # IMPORTANT for BLOB handling
+            cursor = db.cursor(buffered=True)
 
             cursor.execute("""
                 INSERT INTO stored_files (file_name, file_ext, file_size, uploaded_at, file_data)
@@ -484,6 +888,11 @@ def truncket():
 
 
 
+@app.route("/send-mail", methods=['GET', 'POST'])
+
+
+
+
 
 
 
@@ -500,5 +909,6 @@ def logout():
 
 # ---------------- SCHEDULER CONFIG --------
 if __name__ == '__main__':
+    scheduler.start()
     app.run()
     # app.run(host="0.0.0.0", port=5005, debug=True)
