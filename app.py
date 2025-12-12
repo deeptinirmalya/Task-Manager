@@ -818,8 +818,6 @@ def upload_file():
 
 @app.route('/view_files')
 def list_files():
-    if "user_id" not in session:
-        return redirect("/unautorized")
     try:
         db = get_db_connection2()
         cursor = db.cursor(dictionary=True)
