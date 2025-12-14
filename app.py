@@ -127,6 +127,10 @@ def other_error():
 def done():
     return render_template("done.html")
 
+@app.route("/back_to_pushbullet", methods=["GET"])
+def back_to_pushbullet():
+    return redirect("pushbullet://")
+
 
 #------------tasks rout-------------------------------
 
@@ -449,8 +453,6 @@ def send_pending_tasks():
     api_key = request.args.get("api_key")
     expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
 
-
-
     
     print("RECEIVED api_key:", api_key)
     print("EXPECTED api_key:", expected_key)
@@ -465,14 +467,13 @@ def send_pending_tasks():
     conn.close()
 
     tasks = [row["task"] for row in results]
-    final_result = "\n".join(tasks) if tasks else "No pending tasks"
-
+    final_result = "\n\n".join(tasks) if tasks else "No pending tasks"
 
     pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
     if pb_key:
         try:
             pb = Pushbullet(pb_key)
-            pb.push_note("🤖Pending Tasks:🤖", final_result)
+            pb.push_note("🤖Pending Tasks:", final_result)
         except Exception as e:
             print("Pushbullet error:", e)
 
@@ -495,7 +496,7 @@ def remind_for_ippb_login():
     title = "🤖Pending Tasks Alert🤖"
     url = f"https://deepti.onrender.com/ippb_pass?api_key={os.getenv("ROUT_ACTIVATE_API_KEY")}"
     msg = f"This is a reminder for login to your IPPB app for avoid password deactivation.\n\
-            \n-----------------------------------------------------------\
+            \n-----------------------------------------------------------\n\
             \n If forgotten the password then click the below link⬇️\n"
 
     pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
@@ -525,7 +526,7 @@ def ippb_pass():
     
     msg = f"This is a the password for IPPB mobile login.\
                 \n--------------------------------------------------\
-                \n     {os.getenv("IPPB_PASSWORD")}\
+                \n {os.getenv("IPPB_PASSWORD")}\
                 \n--------------------------------------------------\n\
                 💀keep it Secret💀"
 
@@ -538,7 +539,7 @@ def ippb_pass():
             pb.push_note("🤖Password for IPPB login:", msg)
         except Exception as e:
             print("Pushbullet error:", e)
-    return redirect("/Done")
+    return redirect("/back_to_pushbullet")
 
 
 @app.route("/clear_push", methods=["GET"])
@@ -556,7 +557,7 @@ def clear_notification():
     try:
         pb = Pushbullet(pb_key)
 
-        pushes = pb.get_pushes()   # ← NO active_only
+        pushes = pb.get_pushes()
 
         for push in pushes:
             push_id = push.get("iden")
@@ -565,7 +566,6 @@ def clear_notification():
             try:
                 pb.delete_push(push_id)
             except Exception as e:
-                # Ignore already-deleted / undeletable pushes
                 print("Delete failed:", e)
 
     except Exception as e:
