@@ -9,6 +9,7 @@ import pytz
 import requests
 import io
 import random
+from datetime import time
 from pushbullet import Pushbullet
 
 load_dotenv()
@@ -126,11 +127,6 @@ def other_error():
 @app.route('/Done', methods=['GET', 'POST'])
 def done():
     return render_template("done.html")
-
-@app.route("/back_to_pushbullet", methods=["GET"])
-def back_to_pushbullet():
-    return redirect("pushbullet://")
-
 
 #------------tasks rout-------------------------------
 
@@ -459,6 +455,13 @@ def send_pending_tasks():
 
     if not api_key or not expected_key or api_key.strip() != expected_key:
         return jsonify({"error": "Unauthorized"}), 401
+    
+    now = get_current_ist_time().time()
+    start = time(00, 45)
+    end   = time(6, 30)
+
+    if now >= start or now <= end:
+        return jsonify({"message": "this is not the right time"}), 200
 
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True)
@@ -539,7 +542,7 @@ def ippb_pass():
             pb.push_note("🤖Password for IPPB login:", msg)
         except Exception as e:
             print("Pushbullet error:", e)
-    return redirect("/back_to_pushbullet")
+    return redirect("/Done")
 
 
 @app.route("/clear_push", methods=["GET"])
@@ -556,7 +559,6 @@ def clear_notification():
 
     try:
         pb = Pushbullet(pb_key)
-
         pushes = pb.get_pushes()
 
         for push in pushes:
