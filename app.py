@@ -3,15 +3,13 @@ from flask import Flask, render_template, request, redirect, session, url_for, s
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 import time
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from dotenv import load_dotenv
 import mysql.connector
 import pytz
 import requests
 import io
 import random
+from pushbullet import Pushbullet
 
 load_dotenv()
 
@@ -431,7 +429,7 @@ def truncket():
             flash("All files deleted successfully!", "success")
             return redirect(url_for('list_files'))
         except Exception as e:
-            print("Error:", e)  # useful for debugging
+            print("Error:", e)
             return redirect('/server-error')
     else:
         flash("Wrong password", "error")
@@ -444,6 +442,31 @@ def logout():
     return redirect(url_for("login"))
 
 #----------------ROUTS END----------------------------
+
+#----------------------- NOTIFICATION ----------------------------------
+@app.route("/pending_tasks",  methods=['GET'])
+def send_pending_tasks():
+    api_key = request.args.get("api_key")
+
+    if api_key != os.getenv("ROUT_ACTIVATE_API_KEY"):
+        return {"error": "Unauthorized"}, 401
+    
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("SELECT task FROM task WHERE is_complete=%s",("False",))
+    results = cur.fetchall()
+
+    tasks = [row["task"] for row in results]
+    final_result = "\n".join(tasks)
+
+    pb = Pushbullet(os.getenv("PUSHBULLET_AUTH_KEY"))
+    pb.push_note("Pending Tasks:", final_result)
+
+    return {"status": "Notification sent"}, 200
+    
+
+#  http://localhost:5000/pending_tasks?api_key=dev$$shfujhg$sd_fkJHFGj$875356dfsdfjhg
+
 
 # ---------------- SCHEDULER CONFIG --------
 if __name__ == '__main__':
