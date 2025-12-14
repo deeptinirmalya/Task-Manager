@@ -446,32 +446,24 @@ def logout():
 #----------------------- NOTIFICATION ----------------------------------
 @app.route("/pending_tasks", methods=["GET"])
 def send_pending_tasks():
-    api_key = request.headers.get("X-API-KEY")
+    api_key = request.args.get("api_key")  # <-- get from URL
     expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
 
-
-    if not api_key:
-        return jsonify({"error": "Unauthorized: missing API key"}), 401
-    if not expected_key or api_key.strip() != expected_key:
+    # Validate API key
+    if not api_key or not expected_key or api_key.strip() != expected_key:
         return jsonify({"error": "Unauthorized"}), 401
 
-
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("SELECT task FROM task WHERE is_complete = %s", ("False",))
-        results = cur.fetchall()
-    except mysql.connector.Error as e:
-        return jsonify({"error": "Database error", "details": str(e)}), 500
-    finally:
-        if conn.is_connected():
-            conn.close()
-
+    # Fetch pending tasks
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("SELECT task FROM task WHERE is_complete=%s", (False,))
+    results = cur.fetchall()
+    conn.close()
 
     tasks = [row["task"] for row in results]
     final_result = "\n".join(tasks) if tasks else "No pending tasks"
 
-
+    # Push notification
     pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
     if pb_key:
         try:
@@ -479,10 +471,9 @@ def send_pending_tasks():
             pb.push_note("Pending Tasks:", final_result)
         except Exception as e:
             print("Pushbullet error:", e)
-    else:
-        print("Pushbullet key missing, skipping push.")
 
     return jsonify({"status": "Notification sent", "tasks_sent": len(tasks)}), 200
+
 
     
 
