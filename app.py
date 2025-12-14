@@ -448,7 +448,7 @@ def logout():
 def send_pending_tasks():
     api_key = request.args.get("api_key")
 
-    if api_key != os.getenv("ROUT_ACTIVATE_API_KEY"):
+    if api_key.strip() != os.getenv("ROUT_ACTIVATE_API_KEY"):
         return {"error": "Unauthorized"}, 401
     
     conn = get_db_connection()
