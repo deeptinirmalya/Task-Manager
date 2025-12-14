@@ -465,7 +465,6 @@ def send_pending_tasks():
     return {"status": "Notification sent"}, 200
     
 
-#  http://localhost:5000/pending_tasks?api_key=dev$$shfujhg$sd_fkJHFGj$875356dfsdfjhg
 
 
 # ---------------- SCHEDULER CONFIG --------
