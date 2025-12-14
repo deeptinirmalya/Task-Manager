@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, session, url_for, send_file, flash
+from flask import Flask, render_template, request, redirect, session, url_for, send_file, flash, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 import time
@@ -444,25 +444,46 @@ def logout():
 #----------------ROUTS END----------------------------
 
 #----------------------- NOTIFICATION ----------------------------------
-@app.route("/pending_tasks",  methods=['GET'])
+@app.route("/pending_tasks", methods=["GET"])
 def send_pending_tasks():
-    api_key = request.args.get("api_key")
+    api_key = request.headers.get("X-API-KEY")
+    expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
 
-    if api_key.strip() != os.getenv("ROUT_ACTIVATE_API_KEY"):
-        return {"error": "Unauthorized"}, 401
-    
-    conn = get_db_connection()
-    cur = conn.cursor(dictionary=True)
-    cur.execute("SELECT task FROM task WHERE is_complete=%s",("False",))
-    results = cur.fetchall()
+
+    if not api_key:
+        return jsonify({"error": "Unauthorized: missing API key"}), 401
+    if not expected_key or api_key.strip() != expected_key:
+        return jsonify({"error": "Unauthorized"}), 401
+
+
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(dictionary=True)
+        cur.execute("SELECT task FROM task WHERE is_complete = %s", ("False",))
+        results = cur.fetchall()
+    except mysql.connector.Error as e:
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+    finally:
+        if conn.is_connected():
+            conn.close()
+
 
     tasks = [row["task"] for row in results]
-    final_result = "\n".join(tasks)
+    final_result = "\n".join(tasks) if tasks else "No pending tasks"
 
-    pb = Pushbullet(os.getenv("PUSHBULLET_AUTH_KEY"))
-    pb.push_note("Pending Tasks:", final_result)
 
-    return {"status": "Notification sent"}, 200
+    pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
+    if pb_key:
+        try:
+            pb = Pushbullet(pb_key)
+            pb.push_note("Pending Tasks:", final_result)
+        except Exception as e:
+            print("Pushbullet error:", e)
+    else:
+        print("Pushbullet key missing, skipping push.")
+
+    return jsonify({"status": "Notification sent", "tasks_sent": len(tasks)}), 200
+
     
 
 
