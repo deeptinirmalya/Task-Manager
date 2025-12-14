@@ -472,7 +472,7 @@ def send_pending_tasks():
     if pb_key:
         try:
             pb = Pushbullet(pb_key)
-            pb.push_note("Pending Tasks:", final_result)
+            pb.push_note("🤖Pending Tasks:🤖", final_result)
         except Exception as e:
             print("Pushbullet error:", e)
 
@@ -494,9 +494,9 @@ def remind_for_ippb_login():
     
     title = "🤖Pending Tasks Alert🤖"
     url = f"https://deepti.onrender.com/ippb_pass?api_key={os.getenv("ROUT_ACTIVATE_API_KEY")}"
-    msg = f"This is a reminder for login to your IPPB app for avoid password deactivation.\
+    msg = f"This is a reminder for login to your IPPB app for avoid password deactivation.\n\
             \n-----------------------------------------------------------\
-            \n If forgotten the password then click the below link⬇️"
+            \n If forgotten the password then click the below link⬇️\n"
 
     pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
     if not pb_key:
@@ -523,9 +523,9 @@ def ippb_pass():
     if not api_key or not expected_key or api_key.strip() != expected_key:
         return jsonify({"error": "Unauthorized"}), 401
     
-    msg = f"✒️This is a the password for IPPB mobile login.\
+    msg = f"This is a the password for IPPB mobile login.\
                 \n--------------------------------------------------\
-                \n {os.getenv("IPPB_PASSWORD")}\
+                \n     {os.getenv("IPPB_PASSWORD")}\
                 \n--------------------------------------------------\n\
                 💀keep it Secret💀"
 
@@ -535,7 +535,7 @@ def ippb_pass():
     else:
         try:
             pb = Pushbullet(pb_key)
-            pb.push_note("Password for IPPB login:", msg)
+            pb.push_note("🤖Password for IPPB login:", msg)
         except Exception as e:
             print("Pushbullet error:", e)
     return redirect("/Done")
