@@ -459,7 +459,7 @@ def send_pending_tasks():
     now = get_current_ist_time().time()
     start = time(00, 10)
     end   = time(6, 30)
-    if now >= start or now <= end:
+    if start <= now <= end:
         return jsonify({"message": "this is not the right time"}), 200
 
     conn = get_db_connection()
@@ -574,10 +574,6 @@ def clear_notification():
 
     return jsonify({"status": "all pushes cleared"}), 200
 
-# @app.route("/clear_push", methods=["GET"])
-# def clear_notification():
-
-#     return jsonify({"msg": "sent"}),200
 
 
 
