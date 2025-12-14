@@ -446,8 +446,12 @@ def logout():
 #----------------------- NOTIFICATION ----------------------------------
 @app.route("/pending_tasks", methods=["GET"])
 def send_pending_tasks():
-    api_key = request.args.get("api_key")  # <-- get from URL
+    api_key = request.args.get("api_key")
     expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
+
+    
+    print("RECEIVED api_key:", api_key)
+    print("EXPECTED api_key:", expected_key)
 
     # Validate API key
     if not api_key or not expected_key or api_key.strip() != expected_key:
