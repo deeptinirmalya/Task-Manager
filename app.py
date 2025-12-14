@@ -449,15 +449,15 @@ def send_pending_tasks():
     api_key = request.args.get("api_key")
     expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
 
+
+
     
     print("RECEIVED api_key:", api_key)
     print("EXPECTED api_key:", expected_key)
 
-    # Validate API key
     if not api_key or not expected_key or api_key.strip() != expected_key:
         return jsonify({"error": "Unauthorized"}), 401
 
-    # Fetch pending tasks
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True)
     cur.execute("SELECT task FROM task WHERE is_complete=%s", (False,))
@@ -467,7 +467,7 @@ def send_pending_tasks():
     tasks = [row["task"] for row in results]
     final_result = "\n".join(tasks) if tasks else "No pending tasks"
 
-    # Push notification
+
     pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
     if pb_key:
         try:
@@ -478,8 +478,101 @@ def send_pending_tasks():
 
     return jsonify({"status": "Notification sent", "tasks_sent": len(tasks)}), 200
 
+    
+@app.route("/ippb_login_reminder", methods=["GET"])
+def remind_for_ippb_login():
+    api_key = request.args.get("api_key")
+    expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
 
     
+    print("RECEIVED api_key:", api_key)
+    print("EXPECTED api_key:", expected_key)
+
+
+    if not api_key or not expected_key or api_key.strip() != expected_key:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    title = "🤖Pending Tasks Alert🤖"
+    url = f"https://deepti.onrender.com/ippb_pass?api_key={os.getenv("ROUT_ACTIVATE_API_KEY")}"
+    msg = f"This is a reminder for login to your IPPB app for avoid password deactivation.\
+            \n-----------------------------------------------------------\
+            \n If forgotten the password then click the below link⬇️"
+
+    pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
+    if not pb_key:
+        print("❌ PUSHBULLET_AUTH_KEY not set")
+    else:
+        try:
+            pb = Pushbullet(pb_key)
+            pb.push_link(title, url, body=msg)
+        except Exception as e:
+            print("Pushbullet error:", e)
+
+    return jsonify({"status": "Notification sent"}), 200
+
+
+@app.route("/ippb_pass", methods=["GET"])
+def ippb_pass():
+    api_key = request.args.get("api_key")
+    expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
+
+    
+    print("RECEIVED api_key:", api_key)
+    print("EXPECTED api_key:", expected_key)
+
+    if not api_key or not expected_key or api_key.strip() != expected_key:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    msg = f"✒️This is a the password for IPPB mobile login.\
+                \n--------------------------------------------------\
+                \n {os.getenv("IPPB_PASSWORD")}\
+                \n--------------------------------------------------\n\
+                💀keep it Secret💀"
+
+    pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
+    if not pb_key:
+        print("❌ PUSHBULLET_AUTH_KEY not set")
+    else:
+        try:
+            pb = Pushbullet(pb_key)
+            pb.push_note("Password for IPPB login:", msg)
+        except Exception as e:
+            print("Pushbullet error:", e)
+    return redirect("/Done")
+
+
+@app.route("/clear_push", methods=["GET"])
+def clear_notification():
+    api_key = request.args.get("api_key")
+    expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
+
+    if not api_key or not expected_key or api_key.strip() != expected_key:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
+    if not pb_key:
+        return jsonify({"error": "Pushbullet key missing"}), 500
+
+    try:
+        pb = Pushbullet(pb_key)
+
+        pushes = pb.get_pushes()   # ← NO active_only
+
+        for push in pushes:
+            push_id = push.get("iden")
+            if not push_id:
+                continue
+            try:
+                pb.delete_push(push_id)
+            except Exception as e:
+                # Ignore already-deleted / undeletable pushes
+                print("Delete failed:", e)
+
+    except Exception as e:
+        print("Pushbullet fatal error:", e)
+
+    return jsonify({"status": "all pushes cleared"}), 200
+
 
 
 
