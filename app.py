@@ -464,7 +464,7 @@ def send_pending_tasks():
 
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True)
-    cur.execute("SELECT task FROM task WHERE is_complete=%s", (False,))
+    cur.execute("SELECT task FROM task WHERE is_complete=%s", ("False",))
     results = cur.fetchall()
     conn.close()
 
@@ -573,7 +573,6 @@ def clear_notification():
         print("Pushbullet fatal error:", e)
 
     return jsonify({"status": "all pushes cleared"}), 200
-
 
 
 
