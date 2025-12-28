@@ -69,7 +69,6 @@ def get_current_ist_time():
     return datetime.now(IST)
 
 def format_ist_time(dt):
-    # Format datetime to string in IST
     if dt.tzinfo is None:
         dt = IST.localize(dt)
     return dt.strftime("%d-%m-%Y %H:%M")
@@ -410,6 +409,70 @@ def download_file(file_id):
         download_name=file_name,
         as_attachment=True
     )
+
+
+@app.route('/view/<int:file_id>')
+def view_file(file_id):
+    # if "user_id" not in session:
+    #     return redirect("/unautorized")
+
+    try:
+        db = get_db_connection2()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT file_name, file_ext, file_data
+            FROM stored_files
+            WHERE id = %s
+        """, (file_id,))
+        file = cursor.fetchone()
+
+        cursor.close()
+        db.close()
+    except Exception as e:
+        print("VIEW ERROR:", e)
+        return redirect('/server-error')
+
+    if not file:
+        return "File not found", 404
+
+    # Decode safely
+    try:
+        content = file["file_data"].decode("utf-8")
+    except UnicodeDecodeError:
+        content = "[❌ Binary file — cannot display as text]"
+
+    return render_template(
+        "file/view_file.html",
+        filename=file["file_name"],
+        extension=file["file_ext"],
+        content=content
+    )
+
+
+@app.route('/delete/<int:file_id>')
+def delete_file(file_id):
+    if "user_id" not in session:
+        return redirect("/unautorized")
+    
+    try:
+        db = get_db_connection2()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute("""
+            DELETE FROM stored_files
+            WHERE id = %s
+        """, (file_id,))
+
+        db.commit()
+        cursor.close()
+        db.close()
+    except Exception as e:
+        print("DELETE ERROR:", e)
+        return redirect('/server-error')
+    return redirect("/view_files")
+
+
 
 @app.route('/truncket', methods=['POST'])
 def truncket():
