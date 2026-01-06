@@ -534,6 +534,9 @@ def send_pending_tasks():
     tasks = [row["task"] for row in results]
     final_result = "\n\n".join(tasks) if tasks else "No pending tasks"
 
+    if final_result == "No pending tasks":
+        return "no pending task"
+
     pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
     if pb_key:
         try:
