@@ -9,9 +9,28 @@
             font-family: monospace;
             padding: 20px;
         }
-        h3 {
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 10px;
+        }
+        h3 {
             color: #6cf;
+            margin: 0;
+        }
+        button {
+            background: #6cf;
+            color: #000;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        button.copied {
+            background: #4caf50;
         }
         pre {
             background: #1e1e1e;
@@ -26,9 +45,29 @@
 </head>
 <body>
 
-<h3>{{ filename }}</h3>
+<div class="top-bar">
+    <h3>{{ filename }}</h3>
+    <button id="copyBtn" onclick="copyContent()">Copy</button>
+</div>
 
-<pre>{{ content }}</pre>
+<pre id="code-content">{{ content }}</pre>
+
+<script>
+function copyContent() {
+    const text = document.getElementById("code-content").innerText;
+    const btn = document.getElementById("copyBtn");
+
+    navigator.clipboard.writeText(text);
+
+    btn.textContent = "Copied";
+    btn.classList.add("copied");
+
+    setTimeout(() => {
+        btn.textContent = "Copy";
+        btn.classList.remove("copied");
+    }, 1000);
+}
+</script>
 
 </body>
 </html>
