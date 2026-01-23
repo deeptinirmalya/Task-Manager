@@ -373,7 +373,7 @@ def list_files():
         db = get_db_connection2()
         cursor = db.cursor(dictionary=True)
 
-        cursor.execute("SELECT id, file_name, file_size, uploaded_at FROM stored_files ORDER BY id DESC")
+        cursor.execute("SELECT id, file_name, file_size, uploaded_at, download FROM stored_files ORDER BY id DESC")
         files = cursor.fetchall()
         db.close()
         cursor.close()
@@ -392,8 +392,13 @@ def download_file(file_id):
 
         cursor.execute("SELECT file_name, file_data FROM stored_files WHERE id = %s",(file_id,))
         result = cursor.fetchone()
-        db.close()
+
+        if "user_id" in session:
+            cursor.execute("UPDATE stored_files SET download=%s WHERE id = %s",("✅", file_id))
+            db.commit()
+
         cursor.close()
+        db.close()
     except Exception as e:
         print("Download error:", str(e))
         return redirect('/server-error')

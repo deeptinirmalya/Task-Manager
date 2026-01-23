@@ -13,11 +13,129 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%);
+            background: linear-gradient(135deg, #0a0000 0%, #1a0505 50%, #000000 100%);
             min-height: 100vh;
             padding: 20px;
             position: relative;
             overflow-x: hidden;
+        }
+
+        /* Animated Background Elements */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 0, 0, 0.3), transparent);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .circle1 {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: -150px;
+            animation-delay: 0s;
+        }
+
+        .circle2 {
+            width: 200px;
+            height: 200px;
+            top: 60%;
+            right: -100px;
+            animation-delay: 5s;
+        }
+
+        .circle3 {
+            width: 250px;
+            height: 250px;
+            bottom: 10%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0.3;
+            }
+            25% {
+                transform: translate(100px, -100px) scale(1.1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translate(200px, 50px) scale(0.9);
+                opacity: 0.4;
+            }
+            75% {
+                transform: translate(50px, 100px) scale(1.05);
+                opacity: 0.6;
+            }
+        }
+
+        /* Particle System */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ff0000;
+            border-radius: 50%;
+            animation: rise 15s infinite linear;
+            opacity: 0;
+        }
+
+        @keyframes rise {
+            0% {
+                opacity: 0;
+                transform: translateY(0) translateX(0);
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100vh) translateX(100px);
+            }
+        }
+
+        /* Generate particles */
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 3s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 6s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 9s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 12s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 2s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 5s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 8s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 11s; }
+        .particle:nth-child(10) { left: 15%; animation-delay: 4s; }
+
+        /* Scanning Line */
+        .scan-line {
+            position: fixed;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff0000, transparent);
+            box-shadow: 0 0 20px #ff0000;
+            animation: scan 8s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
         }
 
         body::before {
@@ -28,8 +146,8 @@
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.05) 0%, transparent 50%);
+                radial-gradient(circle at 20% 50%, rgba(255, 0, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 0, 0, 0.08) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
         }
@@ -59,9 +177,9 @@
             animation: slideDownFade 0.5s ease;
         }
 
-        .flash-message.success { background: linear-gradient(135deg, #00ffff, #8a2be2); }
+        .flash-message.success { background: linear-gradient(135deg, #ff0000, #8b0000); }
         .flash-message.error   { background: linear-gradient(135deg, #ff4d4d, #ff1a1a); }
-        .flash-message.warning { background: linear-gradient(135deg, #ffa500, #ff7f00); }
+        .flash-message.warning { background: linear-gradient(135deg, #ff6600, #ff3300); }
 
         @keyframes slideDownFade {
             0% { opacity: 0; transform: translateY(-20px); }
@@ -78,9 +196,9 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0, 255, 255, 0.1);
-            border: 2px solid rgba(0, 255, 255, 0.5);
-            color: #00ffff;
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid rgba(255, 0, 0, 0.5);
+            color: #ff0000;
             padding: 10px 20px;
             text-decoration: none;
             border-radius: 8px;
@@ -95,9 +213,9 @@
         }
 
         .back-button:hover {
-            background: rgba(0, 255, 255, 0.2);
-            border-color: #00ffff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
             transform: translateX(-3px);
         }
 
@@ -110,9 +228,9 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(138, 43, 226, 0.1);
-            border: 2px solid rgba(138, 43, 226, 0.5);
-            color: #b19cd9;
+            background: rgba(139, 0, 0, 0.1);
+            border: 2px solid rgba(139, 0, 0, 0.5);
+            color: #ff6666;
             padding: 10px 20px;
             text-decoration: none;
             border-radius: 8px;
@@ -128,10 +246,10 @@
         }
 
         .truncket-button:hover {
-            background: rgba(138, 43, 226, 0.2);
-            border-color: #8a2be2;
+            background: rgba(139, 0, 0, 0.2);
+            border-color: #8b0000;
             color: #fff;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
             transform: translateY(-2px);
         }
 
@@ -143,7 +261,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(5px);
             z-index: 2000;
             animation: fadeIn 0.3s ease;
@@ -162,16 +280,16 @@
         }
 
         .modal-content {
-            background: linear-gradient(135deg, rgba(15, 20, 35, 0.95), rgba(20, 25, 40, 0.95));
-            border: 2px solid rgba(138, 43, 226, 0.5);
+            background: linear-gradient(135deg, rgba(20, 0, 0, 0.95), rgba(30, 5, 5, 0.95));
+            border: 2px solid rgba(255, 0, 0, 0.5);
             border-radius: 20px;
             padding: 40px;
             min-width: 300px;
             max-width: 500px;
             width: 100%;
             box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.5),
-                0 0 40px rgba(138, 43, 226, 0.2);
+                0 20px 60px rgba(0, 0, 0, 0.7),
+                0 0 40px rgba(255, 0, 0, 0.3);
             animation: slideUp 0.3s ease;
         }
 
@@ -181,17 +299,18 @@
         }
 
         .modal-title {
-            color: #b19cd9;
+            color: #ff6666;
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 25px;
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
 
         .modal-message {
-            color: #b8c5d6;
+            color: #cccccc;
             font-size: 16px;
             text-align: center;
             margin-bottom: 25px;
@@ -201,8 +320,8 @@
         .password-input {
             width: 100%;
             padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(138, 43, 226, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 0, 0, 0.3);
             border-radius: 10px;
             color: #fff;
             font-size: 16px;
@@ -212,12 +331,12 @@
 
         .password-input:focus {
             outline: none;
-            border-color: #8a2be2;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+            border-color: #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
         }
 
         .password-input::placeholder {
-            color: rgba(184, 197, 214, 0.5);
+            color: rgba(204, 204, 204, 0.5);
         }
 
         .modal-buttons {
@@ -240,20 +359,20 @@
         }
 
         .ok-button, .confirm-button {
-            background: linear-gradient(135deg, #00ffff 0%, #8a2be2 100%);
+            background: linear-gradient(135deg, #ff0000 0%, #8b0000 100%);
             border-color: transparent;
             color: #fff;
         }
 
         .ok-button:hover, .confirm-button:hover {
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
             transform: translateY(-2px);
         }
 
         .cancel-button {
             background: rgba(255, 255, 255, 0.05);
             border-color: rgba(255, 255, 255, 0.3);
-            color: #b8c5d6;
+            color: #cccccc;
         }
 
         .cancel-button:hover {
@@ -263,7 +382,7 @@
         }
 
         .delete-button {
-            background: linear-gradient(135deg, #ff4d4d 0%, #ff1a1a 100%);
+            background: linear-gradient(135deg, #ff4d4d 0%, #cc0000 100%);
             border-color: transparent;
             color: #fff;
         }
@@ -287,24 +406,34 @@
         }
 
         h2 {
-            color: #00ffff;
+            color: #ff0000;
             text-align: center;
             margin-bottom: 40px;
             font-size: 36px;
             text-transform: uppercase;
             letter-spacing: 4px;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.7), 0 0 40px rgba(255, 0, 0, 0.4);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 20px rgba(255, 0, 0, 0.7), 0 0 40px rgba(255, 0, 0, 0.4);
+            }
+            to {
+                text-shadow: 0 0 30px rgba(255, 0, 0, 1), 0 0 60px rgba(255, 0, 0, 0.6);
+            }
         }
 
         .table-wrapper {
-            background: rgba(15, 20, 35, 0.9);
-            border: 2px solid rgba(0, 255, 255, 0.3);
+            background: rgba(20, 0, 0, 0.9);
+            border: 2px solid rgba(255, 0, 0, 0.4);
             border-radius: 20px;
             padding: 30px;
             box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.5),
-                0 0 40px rgba(0, 255, 255, 0.1),
-                inset 0 0 60px rgba(0, 255, 255, 0.03);
+                0 20px 60px rgba(0, 0, 0, 0.7),
+                0 0 40px rgba(255, 0, 0, 0.2),
+                inset 0 0 60px rgba(255, 0, 0, 0.05);
             backdrop-filter: blur(10px);
             overflow-x: auto;
             margin-bottom: 30px;
@@ -315,17 +444,17 @@
         }
 
         .table-wrapper::-webkit-scrollbar-track {
-            background: rgba(0, 255, 255, 0.05);
+            background: rgba(255, 0, 0, 0.1);
             border-radius: 4px;
         }
 
         .table-wrapper::-webkit-scrollbar-thumb {
-            background: rgba(0, 255, 255, 0.3);
+            background: rgba(255, 0, 0, 0.4);
             border-radius: 4px;
         }
 
         .table-wrapper::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 255, 255, 0.5);
+            background: rgba(255, 0, 0, 0.6);
         }
 
         table {
@@ -335,15 +464,15 @@
         }
 
         th {
-            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2));
-            color: #00ffff;
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.3), rgba(139, 0, 0, 0.3));
+            color: #ff0000;
             padding: 18px 15px;
             text-align: left;
             font-size: 14px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 2px;
-            border-bottom: 2px solid rgba(0, 255, 255, 0.5);
+            border-bottom: 2px solid rgba(255, 0, 0, 0.5);
             position: sticky;
             top: 0;
             z-index: 10;
@@ -351,14 +480,18 @@
 
         td {
             padding: 18px 15px;
-            color: #b8c5d6;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+            color: #cccccc;
+            border-bottom: 1px solid rgba(255, 0, 0, 0.15);
             font-size: 14px;
         }
 
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+
         tbody tr:hover {
-            background: rgba(0, 255, 255, 0.05);
-            box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
+            background: rgba(255, 0, 0, 0.1);
+            box-shadow: inset 0 0 20px rgba(255, 0, 0, 0.15);
         }
 
         tbody tr:hover td {
@@ -374,7 +507,7 @@
         .download-link {
             display: inline-block;
             padding: 8px 20px;
-            background: linear-gradient(135deg, #00ffff 0%, #8a2be2 100%);
+            background: linear-gradient(135deg, #ff0000 0%, #8b0000 100%);
             color: #fff;
             text-decoration: none;
             border-radius: 8px;
@@ -388,14 +521,14 @@
         }
 
         .download-link:hover {
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
             transform: translateY(-2px);
         }
 
         .delete-link {
             display: inline-block;
             padding: 8px 20px;
-            background: linear-gradient(135deg, #ff4d4d 0%, #ff1a1a 100%);
+            background: linear-gradient(135deg, #660000 0%, #330000 100%);
             color: #fff;
             text-decoration: none;
             border-radius: 8px;
@@ -409,8 +542,9 @@
         }
 
         .delete-link:hover {
-            box-shadow: 0 0 20px rgba(255, 77, 77, 0.5);
+            box-shadow: 0 0 20px rgba(102, 0, 0, 0.8);
             transform: translateY(-2px);
+            background: linear-gradient(135deg, #990000 0%, #660000 100%);
         }
 
         .upload-more {
@@ -418,10 +552,10 @@
             width: fit-content;
             margin: 0 auto;
             padding: 18px 40px;
-            background: rgba(138, 43, 226, 0.1);
-            border: 2px solid rgba(138, 43, 226, 0.5);
+            background: rgba(139, 0, 0, 0.2);
+            border: 2px solid rgba(139, 0, 0, 0.5);
             border-radius: 12px;
-            color: #b19cd9;
+            color: #ff6666;
             text-decoration: none;
             font-weight: 700;
             font-size: 16px;
@@ -432,17 +566,17 @@
         }
 
         .upload-more:hover {
-            background: rgba(138, 43, 226, 0.2);
-            border-color: #8a2be2;
+            background: rgba(139, 0, 0, 0.3);
+            border-color: #8b0000;
             color: #fff;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
             transform: translateY(-2px);
         }
 
         .no-files {
             text-align: center;
             padding: 60px 20px;
-            color: #b8c5d6;
+            color: #cccccc;
             font-size: 18px;
         }
 
@@ -589,6 +723,23 @@
     </style>
 </head>
 <body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="scan-line"></div>
+        <div class="floating-circle circle1"></div>
+        <div class="floating-circle circle2"></div>
+        <div class="floating-circle circle3"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
 
     <!-- Flash Messages -->
     <div id="flash-container">
@@ -645,6 +796,7 @@
                         <th>Size (bytes)</th>
                         <th>Uploaded At</th>
                         <th>Action</th>
+                        <th>📥 By Ad</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -661,6 +813,7 @@
                                 <button class="delete-link" data-delete-url="{{ url_for('delete_file', file_id=f.id) }}" onclick="openDeleteModal(this.getAttribute('data-delete-url'))">Delete</button>
                             </div>
                         </td>
+                        <td>{{ f.download }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
