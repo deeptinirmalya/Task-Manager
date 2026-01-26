@@ -84,9 +84,20 @@ def login():
     if request.method == 'POST':
         user_id = request.form.get('user_id')
         password = request.form.get('password')
-        if user_id == os.getenv("USER_ID") and password == os.getenv("USER_PASSWORD"):
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+
+        cur.execute("SELECT * FROM users WHERE user_id=%s",(user_id,))
+        res = cur.fetchone()
+
+        if password == res["password"]:
             session['user_id'] = user_id
-            return redirect(url_for('home'))
+            session["id"] = res["id"]
+
+            if user_id == os.getenv("USER_ID"):
+                return redirect(url_for('home'))
+            else:
+                return redirect(url_for('list_files'))
         else:
             msgs=["Invalid Credential", "invalid values", "Credential not match", "wrong input",
                     "wrong Credential", "not allow", "not a valid input"]
@@ -99,6 +110,8 @@ def login():
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     if "user_id" not in session:
+        return redirect("/")
+    if session["user_id"] != os.getenv("USER_ID"):
         return redirect("/")
     return render_template("home_page.html")
 
@@ -133,6 +146,9 @@ def done():
 def sort_tasks():
     if "user_id" not in session:
         return redirect("/unautorized")
+    
+    if session["user_id"] != os.getenv("USER_ID"):
+        return redirect("/unautorized")
     try:
         conn = get_db_connection()
         cur = conn.cursor(dictionary=True)
@@ -163,6 +179,10 @@ def sort_tasks():
 def add_sort_tasks():
     if "user_id" not in session:
         return redirect("/unautorized")
+    
+    if session["user_id"] != os.getenv("USER_ID"):
+        return redirect("/unautorized")
+    
     if request.method == 'POST':
         task_name = request.form["task_name"]
         current_ist_date = format_ist_time(get_current_ist_time())
@@ -182,6 +202,10 @@ def add_sort_tasks():
 def complete_sort_tasks():
     if "user_id" not in session:
         return redirect("/unautorized")
+    
+    if session["user_id"] != os.getenv("USER_ID"):
+        return redirect("/unautorized")
+    
     try:
         conn = get_db_connection()
         cur = conn.cursor(dictionary=True,  buffered=True)
@@ -198,6 +222,10 @@ def complete_sort_tasks():
 def clear_complete_sort_tasks():
     if "user_id" not in session:
         return redirect("/unautorized")
+    
+    if session["user_id"] != os.getenv("USER_ID"):
+        return redirect("/unautorized")
+
     try:
         conn = get_db_connection()
         cur = conn.cursor(dictionary=True)
@@ -216,6 +244,9 @@ def clear_complete_sort_tasks():
 @app.route('/home/expenses', methods=['GET', 'POST'])
 def expenses():
     if "user_id" not in session:
+        return redirect("/unautorized")
+    
+    if session["user_id"] != os.getenv("USER_ID"):
         return redirect("/unautorized")
     try:
         conn = get_db_connection()
@@ -261,6 +292,10 @@ def expenses():
 def add_transaction():
     if "user_id" not in session:
         return redirect("/unautorized")
+    
+    if session["user_id"] != os.getenv("USER_ID"):
+        return redirect("/unautorized")
+    
     if request.method == "POST":
         payment_type = request.form.get("payment_type")     #type
         amount = float(request.form.get("amount"))                 #amount
@@ -349,9 +384,9 @@ def upload_file():
             cursor = db.cursor(buffered=True)
 
             cursor.execute("""
-                INSERT INTO stored_files (file_name, file_ext, file_size, uploaded_at, file_data)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (file_name, file_ext, file_size, uploaded_at, file_data))
+                INSERT INTO stored_files (file_name, file_ext, file_size, uploaded_at, file_data, user_id)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (file_name, file_ext, file_size, uploaded_at, file_data, session["id"]))
             db.commit()
             cursor.close()
             db.close()
@@ -372,11 +407,28 @@ def list_files():
     try:
         db = get_db_connection2()
         cursor = db.cursor(dictionary=True)
+        user_id = os.getenv("USER_ID_C")
 
-        cursor.execute("SELECT id, file_name, file_size, uploaded_at, download FROM stored_files ORDER BY id DESC")
-        files = cursor.fetchall()
-        db.close()
-        cursor.close()
+        if "user_id" not in session:
+            cursor.execute("SELECT id, file_name, file_size, uploaded_at, download, user_id FROM stored_files WHERE user_id=%s ORDER BY id DESC",(user_id,))
+            files = cursor.fetchall()
+            db.close()
+            cursor.close()
+
+        elif session["user_id"] == os.getenv("USER_ID"):
+            cursor.execute("SELECT id, file_name, file_size, uploaded_at, download, user_id FROM stored_files ORDER BY id DESC")
+            files = cursor.fetchall()
+            db.close()
+            cursor.close()
+
+        else:
+            cursor.execute("SELECT id, file_name, file_size, uploaded_at, download, user_id FROM stored_files WHERE user_id=%s ORDER BY id DESC ",(session["id"],))
+            files = cursor.fetchall()
+            if not files:
+                return redirect(url_for('upload_file'))
+            db.close()
+            cursor.close()
+
     except Exception:
         return redirect('/server-error')
     return render_template("file/view_files.html", files=files)
@@ -393,7 +445,7 @@ def download_file(file_id):
         cursor.execute("SELECT file_name, file_data FROM stored_files WHERE id = %s",(file_id,))
         result = cursor.fetchone()
 
-        if "user_id" in session:
+        if "user_id" in session and session["user_id"] == os.getenv("USER_ID"):
             cursor.execute("UPDATE stored_files SET download=%s WHERE id = %s",("✅", file_id))
             db.commit()
 
@@ -466,8 +518,8 @@ def delete_file(file_id):
 
         cursor.execute("""
             DELETE FROM stored_files
-            WHERE id = %s
-        """, (file_id,))
+            WHERE id = %s AND user_id=%s
+        """, (file_id, session["id"]))
 
         db.commit()
         cursor.close()
