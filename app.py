@@ -448,7 +448,7 @@ def remind_for_ippb_login():
 
 
 @app.route("/koyeb_login_reminder", methods=["GET"])
-def remind_for_ippb_login():
+def remind_for_koyeb_login():
     api_key = request.args.get("api_key")
     expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
 
