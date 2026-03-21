@@ -307,8 +307,9 @@
 
 <body>
     <div class="container">
-        <div class="back-button">
+        <div class="back-button" style="display: flex; justify-content: space-between; align-items: center;">
             <a href="/home" class="btn" style="padding: 8px 16px;">← Back</a>
+            <a href="{{ url_for('add_transaction') }}" class="btn" style="padding: 8px 16px;">+ New Transaction</a>
         </div>
 
         <div class="header-grid">
@@ -380,7 +381,6 @@
         </table>
 
         <div class="action-buttons">
-            <a href="{{ url_for('add_transaction') }}" class="btn">New</a>
             <button class="btn" onclick="showMore()">More</button>
         </div>
     </div>
