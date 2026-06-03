@@ -446,66 +446,8 @@ def remind_for_ippb_login():
 
 
 
-@app.route("/koyeb_login_reminder", methods=["GET"])
-def remind_for_koyeb_login():
-    api_key = request.args.get("api_key")
-    expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
-
-    
-    print("RECEIVED api_key:", api_key)
-    print("EXPECTED api_key:", expected_key)
 
 
-    if not api_key or not expected_key or api_key.strip() != expected_key:
-        return jsonify({"error": "Unauthorized"}), 401
-    
-    title = "🤖Pending Tasks Alert🤖"
-    url = f"https://app.koyeb.com/"
-    msg = f"This is a reminder for login to your koyeb dashboard for avoid Account deactivation.\n\
-            \n-----------------------------------------------------------\n"
-
-    pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
-    if not pb_key:
-        print("❌ PUSHBULLET_AUTH_KEY not set")
-    else:
-        try:
-            pb = Pushbullet(pb_key)
-            pb.push_link(title, url, body=msg)
-        except Exception as e:
-            print("Pushbullet error:", e)
-
-    return jsonify({"status": "Notification sent"}), 200
-
-
-
-@app.route("/ippb_pass", methods=["GET"])
-def ippb_pass():
-    api_key = request.args.get("api_key")
-    expected_key = os.getenv("ROUT_ACTIVATE_API_KEY")
-
-    
-    print("RECEIVED api_key:", api_key)
-    print("EXPECTED api_key:", expected_key)
-
-    if not api_key or not expected_key or api_key.strip() != expected_key:
-        return jsonify({"error": "Unauthorized"}), 401
-    
-    msg = f"This is a the password for IPPB mobile login.\
-                \n--------------------------------------------------\
-                \n {os.getenv("IPPB_PASSWORD")}\
-                \n--------------------------------------------------\n\
-                💀keep it Secret💀"
-
-    pb_key = os.getenv("PUSHBULLET_AUTH_KEY")
-    if not pb_key:
-        print("❌ PUSHBULLET_AUTH_KEY not set")
-    else:
-        try:
-            pb = Pushbullet(pb_key)
-            pb.push_note("🤖Password for IPPB login:", msg)
-        except Exception as e:
-            print("Pushbullet error:", e)
-    return redirect("/Done")
 
 
 @app.route("/clear_push", methods=["GET"])
